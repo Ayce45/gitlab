@@ -68,6 +68,7 @@ body {
 				"}",
 		);
 	} catch (err) {
+		console.error('Sass compilation failed:', err.message);
 		process.exit(1);
 	}
 })();
