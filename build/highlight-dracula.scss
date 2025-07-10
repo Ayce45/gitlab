@@ -1,4 +1,4 @@
-/* https://github.com/dracula/pygments/blob/master/dracula.css */
+@use "sass:color";
 
 $dracula-gray-dark: #282a36; // Background
 $dracula-gray: #44475a; // Current Line & Selection
@@ -38,15 +38,36 @@ $dracula-yellow: #f1fa8c;
   }
 
   .line_expansion {
-    @include diff-expansion($dracula-gray-dark, $dracula-gray, $dracula-pink);
+    background-color: $dracula-gray-dark;
+    
+    td {
+      border-top: 1px solid $dracula-gray;
+      border-bottom: 1px solid $dracula-gray;
+    }
+    
+    a {
+      color: $dracula-pink;
+    }
   }
+
+   .diff-line-expand-button {
+      color: $dracula-gray-light;
+      background: $dracula-gray-dark;
+    }
 
   // Diff line
   .line_holder {
+
+    &.diff-grid-row {
+        --diff-expansion-background-color: #{$dracula-gray};
+    }
+
+    &.diff-grid-row.expansion .diff-td,
     &.match .line_content,
-    &.old-nonewline .line_content,
-    &.new-nonewline .line_content {
-      @include dark-diff-match-line;
+     .old-nonewline.line_content,
+     .new-nonewline.line_content {
+        color: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1)
     }
 
     td.diff-line-num.hll:not(.empty-cell),
@@ -57,28 +78,48 @@ $dracula-yellow: #f1fa8c;
     }
 
     .line-coverage {
-      @include line-coverage-border-color($dracula-green, $dracula-orange);
+      transition: border-left 0.1s ease-out;
+      
+      &.coverage {
+        border-left: 3px solid $dracula-green;
+      }
+      
+      &.no-coverage {
+        border-left: 3px solid $dracula-orange;
+      }
     }
     
     .diff-line-num.new,
     .line-coverage.new,
     .line_content.new {
-      $color: rgba($dracula-green, 0.15);
+      background: rgba($dracula-green, 0.15);
 
-      @include diff-background($color, $color, transparent);
+      &.line_content span.idiff {
+        background: rgba($dracula-green, 0.15);
+      }
+
+      &.diff-line-num {
+        border-color: rgba($dracula-gray-dark, 0);
+      }
 
       &::before,
       a {
-        color: $dracula-blue
+        color: $dracula-blue;
       }
     }
 
     .diff-line-num.old,
     .line-coverage.old,
     .line_content.old {
-      $color: rgba($dracula-red, 0.3);
+      background: rgba($dracula-red, 0.3);
 
-      @include diff-background($color, $color, transparent);
+      &.line_content span.idiff {
+        background: rgba($dracula-red, 0.3);
+      }
+
+      &.diff-line-num {
+        border-color: rgba(0, 0, 0, 0);
+      }
 
       &::before,
       a {
@@ -90,16 +131,17 @@ $dracula-yellow: #f1fa8c;
       &.is-over,
       &.hll:not(.empty-cell).is-over {
         background-color: $dracula-blue;
-        border-color: darken($dracula-blue, 5%);
+        border-color: color.adjust($dracula-blue, $lightness: -5%);
 
         a {
-          color: darken($dracula-blue, 15%);
+          color: color.adjust($dracula-blue, $lightness: -15%);
         }
       }
     }
 
     .line_content.match {
-      @include dark-diff-match-line;
+      color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1)
     }
 
     &:not(.diff-expanded) + .diff-expanded,
@@ -119,6 +161,10 @@ $dracula-yellow: #f1fa8c;
         border-color: $dracula-gray-dark;
       }
     }
+  }
+
+  .diff-grid-row.line_holder.diff-tr .diff-td.commented:not(.hll) {
+    background: rgba($dracula-blue, 0.15);
   }
 
   // highlight line via anchor

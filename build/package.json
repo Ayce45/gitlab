@@ -1,9 +1,13 @@
 {
+	"name": "dracula-highlight-builder",
+	"version": "1.0.0",
+	"description": "Build script for Dracula theme highlighting",
 	"scripts": {
 		"build": "node generate.js"
 	},
 	"dependencies": {
-		"node-fetch": "^2.6.0",
-		"node-sass": "^4.13.1"
-	}
+		"node-fetch": "^3.3.2",
+		"sass": "^1.69.5"
+	},
+	"type": "module"
 }

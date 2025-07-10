@@ -1,12 +1,12 @@
-const fetch = require("node-fetch");
-const sass = require("node-sass");
-const fs = require("fs");
+import fetch from "node-fetch";
+import * as sass from "sass";
+import fs from "fs";
 
 const userStyleComment = `/* ==UserStyle==
 @name         Dracula for GitLab
 @description  A dark theme for GitLab
 @namespace    github.com/dracula/gitlab
-@version      1.0.0
+@version      2.0.0
 @homepageURL  https://draculatheme.com/gitlab
 @supportURL   https://github.com/dracula/gitlab/issues
 @license      MIT
@@ -14,77 +14,60 @@ const userStyleComment = `/* ==UserStyle==
 ==/UserStyle== */
 `;
 
-async function download(url, removeImports) {
-	const res = await fetch(url);
-	let text = await res.text();
-
-	if (removeImports) text = text.replace(/@import [^]*?;/gi, "");
-
-	return text;
-}
-
 (async () => {
-	// https://gitlab.com/gitlab-org/gitlab-foss/-/blob/master/app/assets/stylesheets/highlight/themes/monokai.scss
-	// https://gitlab.com/gitlab-org/gitlab-foss/-/blob/master/app/assets/stylesheets/pages/merge_conflicts.scss
-	// https://gitlab.com/gitlab-org/gitlab-foss/-/blob/master/app/assets/javascripts/ide/lib/themes/monokai.js
-
-	const frameworkVariables = await download(
-		"https://gitlab.com/gitlab-org/gitlab-foss/-/raw/master/app/assets/stylesheets/framework/variables.scss",
-		true,
-	);
-	const highlightCommon = await download(
-		"https://gitlab.com/gitlab-org/gitlab-foss/-/raw/master/app/assets/stylesheets/highlight/common.scss",
-		true,
-	);
 	const highlightDracula = fs.readFileSync("highlight-dracula.scss", "utf8");
 
-	const scss = `
-		${frameworkVariables}
-		${highlightCommon}
-		${highlightDracula}
-		
-		body {
-			.syntax-theme label:nth-child(1) {
-				.preview {
-					height: 100px;
-					border-radius: 4px;
-					background-image: url(https://draculatheme.com/static/img/screenshots/pygments.png);
-					background-size: 300%;
-					img {
-						display: none;
-					}
-				}
+	const scssBody = `
+body {
+	.syntax-theme label:nth-child(1) {
+		span {
+			text-decoration: line-through;
+		}
 
-				word-spacing: -999px;
-				letter-spacing: -999px;
-				&:after {
-					content: "Dracula";
-					margin-left: 4px;
-					word-spacing: normal;
-					letter-spacing: normal;
-				}
+		.preview {
+			height: 100px;
+			width: 160px;
+			border-radius: 4px;
+			background-image: url(https://draculatheme.com/images/hero/dracula-icon.svg);
+			background-size: contain;
+			background-repeat: no-repeat;
+			background-position: center;
+			
+			img {
+				display: none;
 			}
 		}
-	`;
 
-	sass.render(
-		{
-			outputStyle: "compressed",
-			data: scss,
-		},
-		(err, result) => {
-			if (err) return console.log(err);
+		span:after {
+			position: absolute;
+			content: "Dracula";
+			margin-left: 4px;
+			word-spacing: normal;
+			letter-spacing: normal;
+		}
+	}
+}
+`;
 
-			const css = result.css.toString().trim();
-			fs.writeFileSync("../dracula.css", css);
+	const scss = highlightDracula + scssBody;
 
-			fs.writeFileSync(
-				"../dracula.user.css",
-				userStyleComment +
-					'@-moz-document domain("gitlab.com"){' +
-					css +
-					"}",
-			);
-		},
-	);
+	try {
+		const compressedResult = sass.compileString(scss, {
+			style: "compressed"
+		});
+
+		let compressedCss = compressedResult.css.trim();
+
+		fs.writeFileSync("../dracula.css", compressedCss);
+
+		fs.writeFileSync(
+			"../dracula.user.css",
+			userStyleComment +
+				'@-moz-document domain("gitlab.com"){' +
+				compressedCss +
+				"}",
+		);
+	} catch (err) {
+		process.exit(1);
+	}
 })();
